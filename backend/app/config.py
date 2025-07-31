@@ -1,9 +1,21 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
+from fastapi_mail import ConnectionConfig
+
+mail_config = ConnectionConfig(
+    MAIL_USERNAME = "your_email@gmail.com",
+    MAIL_PASSWORD = "your_app_password",
+    MAIL_FROM = "your_email@gmail.com",
+    MAIL_PORT = 587,
+    MAIL_SERVER = "smtp.gmail.com",
+    MAIL_TLS = True,
+    MAIL_SSL = False,
+    USE_CREDENTIALS = True
+)
 
 class Settings(BaseSettings):
     # Database
-    database_url: str = "postgresql://user:password@localhost/dracarys_db"
+    database_url: str = "postgresql://dracarys_user:dracarys_password@localhost:5432/dracarys_db"
     
     # JWT
     secret_key: str = "your-secret-key-change-this-in-production"

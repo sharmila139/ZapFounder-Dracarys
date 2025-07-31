@@ -4,6 +4,9 @@ from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from typing import List
+from fastapi import Request
+from fastapi_mail import FastMail, MessageSchema, MessageType, ConnectionConfig
+import os
 
 from . import models, schemas, auth
 from .database import engine, get_db
@@ -12,6 +15,18 @@ from .dependencies import get_current_active_user, get_super_user
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
+
+# Add email config (replace with your Gmail and app password)
+mail_config = ConnectionConfig(
+    MAIL_USERNAME = os.getenv("GMAIL_USER", "zapfounder0@gmail.com"),
+    MAIL_PASSWORD = os.getenv("GMAIL_APP_PASSWORD", "sarath@0"),
+    MAIL_FROM = os.getenv("GMAIL_USER", "zapfounder0@gmail.com"),
+    MAIL_PORT = 587,
+    MAIL_SERVER = "smtp.gmail.com",
+    MAIL_STARTTLS = True,   # Correct for TLS
+    MAIL_SSL_TLS = False,   # Not using SSL
+    USE_CREDENTIALS = True
+)
 
 app = FastAPI(
     title="Dracarys API",
@@ -168,6 +183,29 @@ def process_ai_input(
         "user_id": current_user.id
     }
 
+
+@app.post("/forgot-password")
+async def forgot_password(request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    email = data.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+    # Generate token
+    token = auth.create_password_reset_token(email)
+    reset_link = f"http://localhost:3000/reset-password?token={token}"
+    message = MessageSchema(
+        subject="Password Reset Request",
+        recipients=[email],
+        body=f"Click the link to reset your password: {reset_link}",
+        subtype=MessageType.plain
+    )
+    fm = FastMail(mail_config)
+    try:
+        await fm.send_message(message)
+    except Exception as e:
+        print(f"Email send error: {e}")
+        # For security, do not reveal email errors to the client
+    return {"message": "If an account with that email exists, a reset link has been sent."}
 # Health check
 @app.get("/health")
 def health_check():

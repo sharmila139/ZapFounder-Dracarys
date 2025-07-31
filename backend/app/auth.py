@@ -56,3 +56,45 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     db.commit()
     db.refresh(db_user)
     return db_user 
+
+# --- Forget Password Functionality ---
+
+def create_password_reset_token(email: str, expires_delta: Optional[timedelta] = None) -> str:
+    """
+    Create a JWT token for password reset, encoding the user's email.
+    """
+    to_encode = {"sub": email}
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=30)  # 30 minutes default
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
+    return encoded_jwt
+
+def verify_password_reset_token(token: str) -> Optional[str]:
+    """
+    Verify the password reset token and return the email if valid.
+    """
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        email: str = payload.get("sub")
+        if email is None:
+            return None
+        return email
+    except JWTError:
+        return None
+
+def reset_user_password(db: Session, email: str, new_password: str) -> bool:
+    """
+    Reset the user's password to the new password.
+    Returns True if successful, False if user not found.
+    """
+    user = get_user(db, email)
+    if not user:
+        return False
+    user.hashed_password = get_password_hash(new_password)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return True

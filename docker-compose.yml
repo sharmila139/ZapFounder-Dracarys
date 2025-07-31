@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: dracarys_postgres
+    environment:
+      POSTGRES_DB: dracarys_db
+      POSTGRES_USER: dracarys_user
+      POSTGRES_PASSWORD: dracarys_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dracarys_network
+
+  # Python Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dracarys_backend
+    environment:
+      - DATABASE_URL=postgresql://dracarys_user:dracarys_password@postgres:5432/dracarys_db
+      - SECRET_KEY=your-secret-key-change-this-in-production
+      - ENVIRONMENT=development
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/app
+    networks:
+      - dracarys_network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dracarys_frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - dracarys_network
+    command: npm run dev
+
+volumes:
+  postgres_data:
+
+networks:
+  dracarys_network:
+    driver: bridge 

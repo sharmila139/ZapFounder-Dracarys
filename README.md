@@ -19,26 +19,6 @@ A complete website with Next.js frontend, Python FastAPI backend, and PostgreSQL
 - **Authentication**: JWT tokens
 - **Deployment**: Docker support
 
-## Project Structure
-
-```
-dracarys/
-├── frontend/                 # Next.js application
-│   ├── app/                 # App router pages
-│   ├── components/          # Reusable components
-│   ├── lib/                 # Utilities and configurations
-│   └── public/              # Static assets
-├── backend/                 # Python FastAPI application
-│   ├── app/                 # Main application code
-│   ├── models/              # Database models
-│   ├── schemas/             # Pydantic schemas
-│   └── migrations/          # Database migrations
-├── docker-compose.yml       # Docker configuration
-└── README.md               # This file
-```
-
-## Quick Start
-
 ### Prerequisites
 
 - Node.js 18+
@@ -74,38 +54,10 @@ dracarys/
    alembic upgrade head
    ```
 
-4. **Environment Variables:**
-   Create `.env.local` in frontend and `.env` in backend with:
-   ```
-   DATABASE_URL=postgresql://user:password@localhost/dracarys_db
-   JWT_SECRET=your-secret-key
-   ```
-
 ### Docker Setup
 
 ```bash
 docker-compose up --build
 ```
 
-## API Documentation
-
-Once the backend is running, visit:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-
-## Default Users
-
-- **Super User**: admin@dracarys.com / admin123
-- **Test User**: user@dracarys.com / user123
-
-## Customization
-
-All content is stored in the database and can be customized through:
-1. Admin panel (super user access)
-2. Direct database updates
-3. API endpoints for content management
-
-## License
-
-MIT License 
 

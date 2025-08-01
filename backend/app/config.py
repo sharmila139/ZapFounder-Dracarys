@@ -2,16 +2,16 @@ from pydantic_settings import BaseSettings
 from typing import Optional
 from fastapi_mail import ConnectionConfig
 
-mail_config = ConnectionConfig(
-    MAIL_USERNAME = "your_email@gmail.com",
-    MAIL_PASSWORD = "your_app_password",
-    MAIL_FROM = "your_email@gmail.com",
-    MAIL_PORT = 587,
-    MAIL_SERVER = "smtp.gmail.com",
-    MAIL_TLS = True,
-    MAIL_SSL = False,
-    USE_CREDENTIALS = True
-)
+# mail_config = ConnectionConfig(
+#     MAIL_USERNAME = "your_email@gmail.com",
+#     MAIL_PASSWORD = "your_app_password",
+#     MAIL_FROM = "your_email@gmail.com",
+#     MAIL_PORT = 587,
+#     MAIL_SERVER = "smtp.gmail.com",
+#     MAIL_TLS = True,
+#     MAIL_SSL = False,
+#     USE_CREDENTIALS = True
+# )
 
 class Settings(BaseSettings):
     # Database

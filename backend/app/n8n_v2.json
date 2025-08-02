@@ -43,7 +43,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 1,
         "position": [
-          336,
+          464,
           -336
         ],
         "httpRequestOptions": {
@@ -61,7 +61,7 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1,
         "position": [
-          480,
+          624,
           -336
         ]
       },
@@ -189,6 +189,19 @@
           48,
           -336
         ]
+      },
+      {
+        "parameters": {
+          "functionCode": "// Use 'items' if $json is undefined\nconst data = $json?.output || items?.[0]?.json?.output;\n\nif (!data) {\n  throw new Error(\"No output found in JSON\");\n}\n\nlet parsedOutput;\ntry {\n  parsedOutput = JSON.parse(data);  // parse the stringified output\n} catch (e) {\n  throw new Error(\"Failed to parse output string: \" + e.message);\n}\n\nconst html = parsedOutput?.files?.[\"index.html\"];\n\nif (!html) {\n  throw new Error(\"index.html not found in output.files\");\n}\n\nreturn [{\n  json: {\n    name: \"dracarys_ice_deploy\",\n    files: [\n      {\n        file: \"index.html\",\n        data: html\n      }\n    ],\n    projectSettings: {\n      framework: null\n    }\n  }\n}];"
+        },
+        "id": "4559d264-7501-4d64-bf52-cd7bb4b37fd3",
+        "name": "prepare vercel payload",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          320,
+          -336
+        ]
       }
     ],
     "pinData": {
@@ -216,7 +229,7 @@
         "main": [
           [
             {
-              "node": "Deploy to Vercel",
+              "node": "prepare vercel payload",
               "type": "main",
               "index": 0
             }
@@ -310,13 +323,24 @@
             }
           ]
         ]
+      },
+      "prepare vercel payload": {
+        "main": [
+          [
+            {
+              "node": "Deploy to Vercel",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "active": true,
     "settings": {
       "executionOrder": "v1"
     },
-    "versionId": "ab2ee8cc-047b-45c5-98dd-f2d19018a6d0",
+    "versionId": "7f0a1933-a3ce-43ba-bd48-03e4ff52be48",
     "meta": {
       "templateCredsSetupCompleted": true,
       "instanceId": "e809c6745eb185fae5182d9813b06467be529b92443478fb9c1242de9059cdda"

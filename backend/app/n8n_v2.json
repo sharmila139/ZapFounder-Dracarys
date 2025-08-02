@@ -8,27 +8,27 @@
           "responseMode": "lastNode",
           "options": {}
         },
-        "id": "bd1536dd-6e71-497e-8200-fcc959d9a4cc",
+        "id": "8a5703b0-03ad-46cc-85ff-46fc10a4f348",
         "name": "Webhook",
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 1,
         "position": [
-          -80,
-          16
+          -560,
+          -336
         ],
         "webhookId": "ae5e1ef1-b354-4798-8408-51f919da6a0a"
       },
       {
         "parameters": {
-          "functionCode": "const html = $json.choices[0].text;\nreturn [{\n  json: {\n    files: {\n      \"index.html\": html\n    }\n  }\n}];"
+          "functionCode": "const html = $json.files && $json.files[\"index.html\"] ? $json.files[\"index.html\"] : \"\";\nif (!html) {\n  console.error(\"Prepare Files: index.html not found in input\", $json);\n  return [{ json: { error: \"index.html not found in input\", details: $json } }];\n}\nreturn [{\n  json: {\n    files: {\n      \"index.html\": html\n    }\n  }\n}];"
         },
-        "id": "9651af32-bbed-43a1-bdc9-ef32db00c865",
+        "id": "8b043d82-0a63-4738-a7d2-0793eee40c29",
         "name": "Prepare Files",
         "type": "n8n-nodes-base.function",
         "typeVersion": 1,
         "position": [
-          592,
-          16
+          192,
+          -336
         ]
       },
       {
@@ -36,20 +36,19 @@
           "requestMethod": "POST",
           "url": "https://api.vercel.com/v13/deployments",
           "jsonParameters": true,
-          "options": {},
-          "bodyParametersJson": "={\n  \"name\": \"ai-site-{{$execution.id}}\",\n  \"files\": Object.entries($json[\"files\"]).map(([name, content]) => ({ \"file\": name, \"data\": content }))\n}"
+          "options": {}
         },
-        "id": "6e005d40-f00d-46f4-955b-9d8ea31ca2e7",
+        "id": "32765c5e-a240-42c1-bce9-d727e21dd0d8",
         "name": "Deploy to Vercel",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 1,
         "position": [
-          784,
-          16
+          336,
+          -336
         ],
         "httpRequestOptions": {
           "headers": {
-            "Authorization": "5ZEXdbEQ7nrX6PW0AbpuOZCv"
+            "Authorization": "Bearer aZAgB1xo8sICgf5j7jdlPgnP"
           }
         }
       },
@@ -57,52 +56,43 @@
         "parameters": {
           "options": {}
         },
-        "id": "a822943c-37b6-4348-b06b-76c3b8069ace",
+        "id": "7002ed47-daec-4dac-8504-8babfa398534",
         "name": "Send Hosted URL",
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1,
         "position": [
-          944,
-          16
+          480,
+          -336
         ]
       },
       {
         "parameters": {
-          "options": {},
-          "toolDescription": "You are an expert web developer. Given a project description, return the HTML code for the website in this exact JSON format:\n\n{\n  \"files\": {\n    \"index.html\": \"<FULL HTML CODE>\"\n  }\n}\n\nOnly respond in this JSON format. Do not add explanations or extra text."
+          "promptType": "define",
+          "text": "={{ $json.description }}",
+          "options": {
+            "systemMessage": "You are an expert web developer. Given a project description, return ONLY the HTML code for the website in this EXACT JSON format:\n\n{\n  \"files\": {\n    \"index.html\": \"<FULL HTML CODE>\"\n  }\n}\n\n•⁠  ⁠Do NOT include any explanations, comments, or extra text.\n•⁠  ⁠Do NOT change the property names or structure.\n•⁠  ⁠Do NOT include markdown, code fences, or any formatting other than the JSON object above.\n•⁠  ⁠If you cannot generate the HTML, return:\n  {\n    \"files\": {\n      \"index.html\": \"\"\n    }\n  }\n•⁠  ⁠Your response MUST be valid JSON and must match the structure above exactly."
+          }
         },
         "type": "@n8n/n8n-nodes-langchain.agent",
         "typeVersion": 2.1,
         "position": [
-          208,
-          16
+          -272,
+          -336
         ],
-        "id": "eae7f9cb-93da-455b-a878-f398d23086d7",
+        "id": "3abcd56b-da73-438a-87dc-b07cd35306b0",
         "name": "AI Agent"
       },
       {
         "parameters": {
-          "options": {
-            "safetySettings": {
-              "values": [
-                {
-                  "threshold": "BLOCK_LOW_AND_ABOVE"
-                },
-                {
-                  "category": "HARM_CATEGORY_HATE_SPEECH",
-                  "threshold": "BLOCK_LOW_AND_ABOVE"
-                }
-              ]
-            }
-          }
+          "options": {}
         },
         "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
         "typeVersion": 1,
         "position": [
-          208,
-          208
+          -272,
+          -144
         ],
-        "id": "7b02f4df-34db-4569-bd1b-83e9e75331da",
+        "id": "dbf76e07-6690-4571-bcb2-6b264422683d",
         "name": "Google Gemini Chat Model",
         "credentials": {
           "googlePalmApi": {
@@ -116,22 +106,23 @@
         "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
         "typeVersion": 1.3,
         "position": [
-          336,
-          208
+          -144,
+          -144
         ],
-        "id": "c3322881-0ec2-4132-bef7-afd4d2a386bf",
+        "id": "061b3147-5a23-4ba0-9fa6-a05fa20780b8",
         "name": "Postgres Chat Memory",
         "credentials": {
           "postgres": {
             "id": "aSnobyVKf15MKwc5",
             "name": "Postgres account"
           }
-        }
+        },
+        "disabled": true
       },
       {
         "parameters": {
           "toolDescription": "AI Agent for the client website",
-          "text": "=",
+          "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
           "options": {
             "systemMessage": "You have complete access to the data in the website and the details given by the client/ super user. Based on the information - respond accordingly to the users queries."
           }
@@ -139,50 +130,32 @@
         "type": "@n8n/n8n-nodes-langchain.agentTool",
         "typeVersion": 2.2,
         "position": [
-          464,
-          320
+          -16,
+          -32
         ],
-        "id": "5eb7eb69-7f74-46cb-96a6-bea47a6661f8",
-        "name": "AI Agent Tool"
+        "id": "4dc8c9db-4e69-411d-9b39-51af3c529f2c",
+        "name": "AI Agent Tool",
+        "disabled": true
       },
       {
         "parameters": {
-          "options": {
-            "safetySettings": {
-              "values": [
-                {
-                  "threshold": "BLOCK_LOW_AND_ABOVE"
-                },
-                {
-                  "category": "HARM_CATEGORY_HATE_SPEECH",
-                  "threshold": "BLOCK_LOW_AND_ABOVE"
-                },
-                {
-                  "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                  "threshold": "BLOCK_LOW_AND_ABOVE"
-                },
-                {
-                  "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-                  "threshold": "BLOCK_LOW_AND_ABOVE"
-                }
-              ]
-            }
-          }
+          "options": {}
         },
         "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
         "typeVersion": 1,
         "position": [
-          464,
-          480
+          -16,
+          144
         ],
-        "id": "b401f960-594e-4ac2-b677-9ff652de3808",
+        "id": "d3276f17-e6cc-46b8-8518-a1b155b48ea4",
         "name": "Google Gemini Chat Model1",
         "credentials": {
           "googlePalmApi": {
             "id": "odcPPcHmCHbnELtz",
             "name": "Google Gemini(PaLM) Api account"
           }
-        }
+        },
+        "disabled": true
       },
       {
         "parameters": {
@@ -191,33 +164,42 @@
         "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
         "typeVersion": 1.3,
         "position": [
-          592,
-          480
+          128,
+          144
         ],
-        "id": "ef46a2e7-9cdc-4459-9d22-d98ab909466e",
+        "id": "03e7e0e5-bb19-4b8b-a0f8-974e85225093",
         "name": "Postgres Chat Memory1",
         "credentials": {
           "postgres": {
             "id": "aSnobyVKf15MKwc5",
             "name": "Postgres account"
           }
-        }
+        },
+        "disabled": true
       },
       {
         "parameters": {
-          "functionCode": "\n// Ensure the AI Agent returned structured JSON with index.html\nconst output = $json;\n\nif (!output.files || !output.files[\"index.html\"]) {\n  throw new Error(\"AI Agent did not return 'files.index.html'\");\n}\n\nreturn [\n  {\n    json: output\n  }\n];\n"
+          "functionCode": "const output = $json;\n\n// Log the raw output for debugging\nconsole.log(\"AI Agent output:\", JSON.stringify(output, null, 2));\n\nif (!output.files || !output.files[\"index.html\"]) {\n  // Log the error for debugging\n  console.error(\"Parse Error: Missing files.index.html in AI Agent output:\", JSON.stringify(output, null, 2));\n  return [\n    {\n      json: {\n        error: \"AI Agent did not return 'files.index.html'\",\n        details: output\n      }\n    }\n  ];\n}\n\nreturn [\n  {\n    json: output\n  }\n];"
         },
-        "id": "parse-output-node-001",
+        "id": "29015ada-eab3-448d-accf-8322b5cd5acc",
         "name": "Parse AI Output",
         "type": "n8n-nodes-base.function",
         "typeVersion": 1,
         "position": [
-          400,
-          16
+          48,
+          -336
         ]
       }
     ],
-    "pinData": {},
+    "pinData": {
+      "Webhook": [
+        {
+          "json": {
+            "description": "A modern portfolio website for a freelance web developer with a contact form."
+          }
+        }
+      ]
+    },
     "connections": {
       "Webhook": {
         "main": [
@@ -334,7 +316,7 @@
     "settings": {
       "executionOrder": "v1"
     },
-    "versionId": "f5009cbe-a9b8-4394-855a-df6275ef9f3b",
+    "versionId": "ab2ee8cc-047b-45c5-98dd-f2d19018a6d0",
     "meta": {
       "templateCredsSetupCompleted": true,
       "instanceId": "e809c6745eb185fae5182d9813b06467be529b92443478fb9c1242de9059cdda"

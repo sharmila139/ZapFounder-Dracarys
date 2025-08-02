@@ -1,0 +1,344 @@
+{
+    "name": "My workflow 2",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "generate-site",
+          "responseMode": "lastNode",
+          "options": {}
+        },
+        "id": "bd1536dd-6e71-497e-8200-fcc959d9a4cc",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [
+          -80,
+          16
+        ],
+        "webhookId": "ae5e1ef1-b354-4798-8408-51f919da6a0a"
+      },
+      {
+        "parameters": {
+          "functionCode": "const html = $json.choices[0].text;\nreturn [{\n  json: {\n    files: {\n      \"index.html\": html\n    }\n  }\n}];"
+        },
+        "id": "9651af32-bbed-43a1-bdc9-ef32db00c865",
+        "name": "Prepare Files",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          592,
+          16
+        ]
+      },
+      {
+        "parameters": {
+          "requestMethod": "POST",
+          "url": "https://api.vercel.com/v13/deployments",
+          "jsonParameters": true,
+          "options": {},
+          "bodyParametersJson": "={\n  \"name\": \"ai-site-{{$execution.id}}\",\n  \"files\": Object.entries($json[\"files\"]).map(([name, content]) => ({ \"file\": name, \"data\": content }))\n}"
+        },
+        "id": "6e005d40-f00d-46f4-955b-9d8ea31ca2e7",
+        "name": "Deploy to Vercel",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [
+          784,
+          16
+        ],
+        "httpRequestOptions": {
+          "headers": {
+            "Authorization": "5ZEXdbEQ7nrX6PW0AbpuOZCv"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "a822943c-37b6-4348-b06b-76c3b8069ace",
+        "name": "Send Hosted URL",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          944,
+          16
+        ]
+      },
+      {
+        "parameters": {
+          "options": {},
+          "toolDescription": "You are an expert web developer. Given a project description, return the HTML code for the website in this exact JSON format:\n\n{\n  \"files\": {\n    \"index.html\": \"<FULL HTML CODE>\"\n  }\n}\n\nOnly respond in this JSON format. Do not add explanations or extra text."
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.1,
+        "position": [
+          208,
+          16
+        ],
+        "id": "eae7f9cb-93da-455b-a878-f398d23086d7",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "options": {
+            "safetySettings": {
+              "values": [
+                {
+                  "threshold": "BLOCK_LOW_AND_ABOVE"
+                },
+                {
+                  "category": "HARM_CATEGORY_HATE_SPEECH",
+                  "threshold": "BLOCK_LOW_AND_ABOVE"
+                }
+              ]
+            }
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          208,
+          208
+        ],
+        "id": "7b02f4df-34db-4569-bd1b-83e9e75331da",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "odcPPcHmCHbnELtz",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.3,
+        "position": [
+          336,
+          208
+        ],
+        "id": "c3322881-0ec2-4132-bef7-afd4d2a386bf",
+        "name": "Postgres Chat Memory",
+        "credentials": {
+          "postgres": {
+            "id": "aSnobyVKf15MKwc5",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "toolDescription": "AI Agent for the client website",
+          "text": "=",
+          "options": {
+            "systemMessage": "You have complete access to the data in the website and the details given by the client/ super user. Based on the information - respond accordingly to the users queries."
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agentTool",
+        "typeVersion": 2.2,
+        "position": [
+          464,
+          320
+        ],
+        "id": "5eb7eb69-7f74-46cb-96a6-bea47a6661f8",
+        "name": "AI Agent Tool"
+      },
+      {
+        "parameters": {
+          "options": {
+            "safetySettings": {
+              "values": [
+                {
+                  "threshold": "BLOCK_LOW_AND_ABOVE"
+                },
+                {
+                  "category": "HARM_CATEGORY_HATE_SPEECH",
+                  "threshold": "BLOCK_LOW_AND_ABOVE"
+                },
+                {
+                  "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                  "threshold": "BLOCK_LOW_AND_ABOVE"
+                },
+                {
+                  "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                  "threshold": "BLOCK_LOW_AND_ABOVE"
+                }
+              ]
+            }
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          464,
+          480
+        ],
+        "id": "b401f960-594e-4ac2-b677-9ff652de3808",
+        "name": "Google Gemini Chat Model1",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "odcPPcHmCHbnELtz",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "tableName": "client_rag_context"
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.3,
+        "position": [
+          592,
+          480
+        ],
+        "id": "ef46a2e7-9cdc-4459-9d22-d98ab909466e",
+        "name": "Postgres Chat Memory1",
+        "credentials": {
+          "postgres": {
+            "id": "aSnobyVKf15MKwc5",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "functionCode": "\n// Ensure the AI Agent returned structured JSON with index.html\nconst output = $json;\n\nif (!output.files || !output.files[\"index.html\"]) {\n  throw new Error(\"AI Agent did not return 'files.index.html'\");\n}\n\nreturn [\n  {\n    json: output\n  }\n];\n"
+        },
+        "id": "parse-output-node-001",
+        "name": "Parse AI Output",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          400,
+          16
+        ]
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Files": {
+        "main": [
+          [
+            {
+              "node": "Deploy to Vercel",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deploy to Vercel": {
+        "main": [
+          [
+            {
+              "node": "Send Hosted URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Postgres Chat Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Parse AI Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent Tool": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent Tool",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Postgres Chat Memory1": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent Tool",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse AI Output": {
+        "main": [
+          [
+            {
+              "node": "Prepare Files",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": true,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "f5009cbe-a9b8-4394-855a-df6275ef9f3b",
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "e809c6745eb185fae5182d9813b06467be529b92443478fb9c1242de9059cdda"
+    },
+    "id": "K566ZZ9C2wW3OIEl",
+    "tags": []
+  }

@@ -1,0 +1,434 @@
+{
+    "name": "solved f/bend integration",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "generate-ai-site",
+          "responseMode": "lastNode",
+          "options": {}
+        },
+        "id": "56ae9188-3957-45da-8688-6904b883c6f2",
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "position": [
+          -2000,
+          624
+        ],
+        "typeVersion": 2,
+        "webhookId": "4f18b5d3-ec0b-43a2-b341-2228e90347d5"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.description }}",
+          "options": {
+            "systemMessage": "You are an expert frontend engineer. Generate a clean responsive HTML/CSS/JS project with index.html. Return only in this JSON: {\"files\":{\"index.html\":\"<...>\", \"style.css\":\"<...>\", \"script.js\":\"<...>\"}}"
+          }
+        },
+        "id": "1277b331-7ec7-47ea-be40-884f4145c6b9",
+        "name": "Frontend Builder Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "position": [
+          -1504,
+          192
+        ],
+        "typeVersion": 2.1
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json }}",
+          "options": {
+            "systemMessage": "You are a backend engineer. Build a backend (e.g., Flask or Express) to serve the given frontend project. Return only the full backend source code (e.g. app.py) as a string."
+          }
+        },
+        "id": "231fd835-faaa-4754-bbac-9077ea74bfbd",
+        "name": "Backend Builder Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "position": [
+          -1776,
+          784
+        ],
+        "typeVersion": 2.1
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json }}",
+          "options": {
+            "systemMessage": "Add a chatbot API to backend and embed frontend chatbot. Return updated app.py and chat.html in: {\"files\":{...}}"
+          }
+        },
+        "id": "05a859b8-586e-45d3-ad2c-6baf1d92af62",
+        "name": "Chatbot Integrator Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "position": [
+          -1408,
+          960
+        ],
+        "typeVersion": 2.1
+      },
+      {
+        "parameters": {
+          "numberInputs": 3
+        },
+        "id": "f48144bd-f5be-4d2c-8733-12fc248f311d",
+        "name": "Merge Agent Files",
+        "type": "n8n-nodes-base.merge",
+        "position": [
+          -912,
+          608
+        ],
+        "typeVersion": 3.2
+      },
+      {
+        "parameters": {
+          "functionCode": "const combined = { files: {} };\nfor (const item of items) {\n  const files = item.json?.files;\n  if (!files || typeof files !== 'object') continue;\n  for (const [name, content] of Object.entries(files)) {\n    combined.files[name] = content;\n  }\n}\nreturn [{ json: combined }];"
+        },
+        "id": "130b64b9-e49b-4397-9c84-dbc4c028b4de",
+        "name": "Combine All Files",
+        "type": "n8n-nodes-base.function",
+        "position": [
+          -752,
+          624
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "functionCode": "const files = $json.files;\nreturn [{\n  json: {\n    name: \"ai_fullstack_project\",\n    files: Object.entries(files).map(([file, data]) => ({ file, data })),\n    projectSettings: { framework: null }\n  }\n}];"
+        },
+        "id": "b31d46a4-dbba-426d-9460-83b381d49d3a",
+        "name": "Prepare Deployment Payload",
+        "type": "n8n-nodes-base.function",
+        "position": [
+          -528,
+          624
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.vercel.com/v12/deployments",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer aZAgB1xo8sICgf5j7jdlPgnP"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json }}",
+          "options": {}
+        },
+        "id": "21866931-f26a-4de3-a7b1-f00d9e856c42",
+        "name": "Deploy to Vercel",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          -304,
+          624
+        ],
+        "typeVersion": 4.2
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "c8daf0c2-9147-4adf-acc3-2566be48646e",
+        "name": "Send Hosted URL",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "position": [
+          -80,
+          624
+        ],
+        "typeVersion": 1.4
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -1776,
+          992
+        ],
+        "id": "5281921c-bee2-4521-9104-f2e682e8d019",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "odcPPcHmCHbnELtz",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -1504,
+          384
+        ],
+        "id": "5671f104-401e-4759-bc4c-080bc97ea43f",
+        "name": "Google Gemini Chat Model2",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "odcPPcHmCHbnELtz",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -1408,
+          1136
+        ],
+        "id": "fd89e032-6bff-4bc7-99a8-faf3cada3914",
+        "name": "Google Gemini Chat Model1",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "odcPPcHmCHbnELtz",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "functionCode": "// Unwrap and parse stringified JSON with triple backticks if present\nlet raw = $json.text || $json.output || JSON.stringify($json);\nraw = raw.replace(/^```json\\s*|\\s*```$/g, \"\");\nlet parsed = {};\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  throw new Error(\"Frontend output is not valid JSON\");\n}\nreturn [{ json: parsed }];"
+        },
+        "id": "3621d7fb-f60b-438c-b6ee-892ddd1acc3b",
+        "name": "Clean Frontend Output",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          -1152,
+          192
+        ]
+      },
+      {
+        "parameters": {
+          "functionCode": "let raw = $json.text || $json.output || \"\";\nraw = raw.replace(/^```(json|python)?\\s*|\\s*```$/g, \"\").trim();\nif (!raw) throw new Error(\"Backend code is empty\");\nreturn [{ json: { files: { \"app.py\": raw } } }];\n"
+        },
+        "id": "688f3fd6-afed-49a9-8144-1fa5734f3354",
+        "name": "Clean Backend Output1",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          -1280,
+          640
+        ]
+      },
+      {
+        "parameters": {
+          "functionCode": "let raw = $json.text || $json.output || \"\";\nraw = raw.replace(/^```(json|python)?\\s*|\\s*```$/g, \"\").trim();\nif (!raw) throw new Error(\"Backend code is empty\");\nreturn [{ json: { files: { \"app.py\": raw } } }];\n"
+        },
+        "id": "9d4e9fba-33c8-4551-b9ce-3121dc945e1c",
+        "name": "Clean Chatbot Output2",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          -1088,
+          816
+        ]
+      }
+    ],
+    "pinData": {
+      "Webhook Trigger": [
+        {
+          "json": {
+            "description": "A modern portfolio website for a freelance web developer with a contact form."
+          }
+        }
+      ]
+    },
+    "connections": {
+      "Webhook Trigger": {
+        "main": [
+          [
+            {
+              "node": "Frontend Builder Agent",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Backend Builder Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Frontend Builder Agent": {
+        "main": [
+          [
+            {
+              "node": "Clean Frontend Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Backend Builder Agent": {
+        "main": [
+          [
+            {
+              "node": "Chatbot Integrator Agent",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Clean Backend Output1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Chatbot Integrator Agent": {
+        "main": [
+          [
+            {
+              "node": "Clean Chatbot Output2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge Agent Files": {
+        "main": [
+          [
+            {
+              "node": "Combine All Files",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Combine All Files": {
+        "main": [
+          [
+            {
+              "node": "Prepare Deployment Payload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Deployment Payload": {
+        "main": [
+          [
+            {
+              "node": "Deploy to Vercel",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deploy to Vercel": {
+        "main": [
+          [
+            {
+              "node": "Send Hosted URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Backend Builder Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model2": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Frontend Builder Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Chatbot Integrator Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Clean Frontend Output": {
+        "main": [
+          [
+            {
+              "node": "Merge Agent Files",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Clean Backend Output1": {
+        "main": [
+          [
+            {
+              "node": "Merge Agent Files",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Clean Chatbot Output2": {
+        "main": [
+          [
+            {
+              "node": "Merge Agent Files",
+              "type": "main",
+              "index": 2
+            }
+          ]
+        ]
+      }
+    },
+    "active": true,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "3bad2f8b-3d38-4a08-a793-989291339282",
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "e809c6745eb185fae5182d9813b06467be529b92443478fb9c1242de9059cdda"
+    },
+    "id": "ibKHlButnogrmIqY",
+    "tags": []
+  }

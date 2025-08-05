@@ -1,0 +1,457 @@
+{
+    "name": "My workflow 4",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "generate-ai-site",
+          "responseMode": "lastNode",
+          "options": {}
+        },
+        "id": "c43dcc0b-ed49-471c-be46-1102d20d5c25",
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "position": [
+          -496,
+          432
+        ],
+        "typeVersion": 2,
+        "webhookId": "4f18b5d3-ec0b-43a2-b341-2228e90347d5"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.description }}",
+          "options": {
+            "systemMessage": "You are a senior frontend developer for an intelligent AI website builder.\n\nYou receive natural language instructions from a user describing the type of website they want.(description)\n\n🎯 Your task is to interpret this description and generate a complete, production-ready HTML/CSS/JS frontend for the described website.\n\n✅ The website should:\n- Be fully responsive (use Flexbox or CSS Grid or tailwind)\n- Include sections appropriate to the business described (e.g., doctors for healthcare, menu for restaurant, testimonials for SaaS)\n- Have clean layout, mobile-friendly spacing, and organized structure\n- Use proper headings, semantic tags, and accessible labels\n\n🧠 Use the description to decide:\n- Which sections to include (hero, about, services, contact, booking, etc.)\n- What placeholder content makes sense (realistic examples, no lorem ipsum)\n- Which images to use (from unsplash/source.unsplash.com, based on keywords)\n- Appropriate icons via Font Awesome\n- Fonts via Google Fonts (e.g., Poppins, Lato, Inter)\n\n🖼 Use only **externally hosted images** (e.g. https://source.unsplash.com/600x400/?<keyword>)\n\n🚫 Do not include markdown formatting, backticks, or explanations.\n🚫 Do not hardcode business-specific names unless clearly provided in input.\n\n✅ Return the full site in this JSON format:\n{\n  \"files\": {\n    \"index.html\": \"<...>\",\n    \"style.css\": \"<...>\",\n    \"script.js\": \"<...>\"\n  }\n}\n"
+          }
+        },
+        "id": "6c739abe-495c-4f71-942e-68db12070a2a",
+        "name": "Frontend Builder Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "position": [
+          0,
+          0
+        ],
+        "typeVersion": 2.1
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json }}",
+          "options": {
+            "systemMessage": "You are a backend engineer working with an AI website builder.. Build a backend (e.g., Flask or Express) to serve the given frontend project. \n\nYour job is to interpret a user's website description and generate a complete Flask backend that supports the described functionality.\n\n✅ Your backend must:\n- Use Flask (Python)\n- Include routes relevant to the website’s needs\n- Accept POST requests for user inputs (e,g: contact forms)\n- Include appropriate CORS headers for frontend integration\n- Return JSON responses with success/error messages\n\n🧠 Analyze the description to decide:\n- Which routes are needed (e.g., /submit, /book, /contact)\n- What fields are involved (e.g., name, email, message, etc.)\n- Which validations are needed (e.g., email format, required fields)\n\n✅ Your app.py must:\n- Be production-ready and formatted\n- Include helpful comments\n- Use environment variables if needed\n- Be compatible with deployment on platforms like Vercel\n\n🚫 Do not output markdown, backticks, or explanations.\n\n✅ Return the backend code as a JSON object like:\n{\n  \"files\": {\n    \"app.py\": \"<...>\"\n  }\n}\n"
+          }
+        },
+        "id": "78a79071-6679-4911-a6be-aed783169488",
+        "name": "Backend Builder Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "position": [
+          -16,
+          384
+        ],
+        "typeVersion": 2.1
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json }}",
+          "options": {
+            "systemMessage": "You are a senior full-stack developer.\n\nAdd a working chatbot feature to an existing AI-generated full-stack web app. The site already includes a frontend (index.html and style.css) and a Flask backend (app.py).\n\n✅ Modify these files to add a **fully working chatbot**, not just a placeholder:\n- Inject a floating chatbot widget into index.html\n- Include the actual <script src=\"chat.js\"> and <link rel=\"stylesheet\" href=\"chat.css\"> tags in the <head>\n- chat.js must contain the real JavaScript that:\n   - Captures user input\n   - Sends it to POST /chat via fetch\n   - Displays the bot response\n- chat.css must style the widget (position: fixed, bottom-right, rounded, etc.)\n- Update app.py to implement a working /chat POST endpoint that returns a basic reply (like \"You said: ...\")\n\n❌ Do NOT insert placeholders like “Chatbot goes here”\n✅ DO include full working HTML, JS, and backend code\n✅ You must include:\n- A floating chatbot icon in bottom-right corner\n- A toggleable chat window\n- Real chatbox markup in index.html\n- Full JavaScript logic (in chat.js)\n- Working /chat route in app.py\n\nThis is production code. Do NOT skip or simplify.\n\n⚠️ Return only this full JSON structure (no markdown or explanations):\n{\n  \"files\": {\n    \"index.html\": \"<full HTML with chatbot embedded>\",\n    \"chat.css\": \"<CSS for chatbot styling>\",\n    \"chat.js\": \"<JS for sending/receiving chat messages>\",\n    \"app.py\": \"<Flask server with new /chat route>\"\n  }\n}\n\n⚠️ All values must be plain, properly escaped JSON strings.\nDo NOT include markdown or code blocks like ```html or ```python.\n"
+          }
+        },
+        "id": "f7826b89-2172-43ec-9176-55f1f2d061cf",
+        "name": "Chatbot Integrator Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "position": [
+          272,
+          800
+        ],
+        "typeVersion": 2.1
+      },
+      {
+        "parameters": {
+          "numberInputs": 3
+        },
+        "id": "2f7c5a4a-4b11-4ecf-ab12-c74135ec6c20",
+        "name": "Merge Agent Files",
+        "type": "n8n-nodes-base.merge",
+        "position": [
+          1408,
+          416
+        ],
+        "typeVersion": 3.2
+      },
+      {
+        "parameters": {
+          "functionCode": "const combined = { files: {} };\nfor (const item of items) {\n  const files = item.json?.files;\n  if (!files || typeof files !== 'object') continue;\n  for (const [name, content] of Object.entries(files)) {\n    combined.files[name] = content;\n  }\n}\nreturn [{ json: combined }];"
+        },
+        "id": "07e6ccd6-893c-4e5a-8419-9328d213ed88",
+        "name": "Combine All Files",
+        "type": "n8n-nodes-base.function",
+        "position": [
+          1616,
+          432
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "functionCode": "const files = $json.files;\nreturn [{\n  json: {\n    name: \"ai_fullstack_project\",\n    files: Object.entries(files).map(([file, data]) => ({ file, data })),\n    projectSettings: { framework: null }\n  }\n}];"
+        },
+        "id": "8c650c20-4a75-42fe-ae84-81883381b100",
+        "name": "Prepare Deployment Payload",
+        "type": "n8n-nodes-base.function",
+        "position": [
+          1856,
+          432
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.vercel.com/v12/deployments",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer aZAgB1xo8sICgf5j7jdlPgnP"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json }}",
+          "options": {}
+        },
+        "id": "7a91359b-437c-47cc-962d-61bec14c34e9",
+        "name": "Deploy to Vercel",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          2128,
+          432
+        ],
+        "typeVersion": 4.2
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "96c026f3-7199-4f39-8c8a-b86249d1189d",
+        "name": "Send Hosted URL",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "position": [
+          2384,
+          432
+        ],
+        "typeVersion": 1.4
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -272,
+          800
+        ],
+        "id": "4eb8091e-f59a-45aa-a16f-d035859ee5f5",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "odcPPcHmCHbnELtz",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          0,
+          192
+        ],
+        "id": "925ed586-d742-46c1-a550-7fa8cde748ef",
+        "name": "Google Gemini Chat Model2",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "odcPPcHmCHbnELtz",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          192,
+          1008
+        ],
+        "id": "385b18e8-22cf-49ac-91bc-853585a13f30",
+        "name": "Google Gemini Chat Model1",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "odcPPcHmCHbnELtz",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "functionCode": "// Unwrap and parse stringified JSON with triple backticks if present\nlet raw = $json.text || $json.output || JSON.stringify($json);\nraw = raw.replace(/^```json\\s*|\\s*```$/g, \"\");\nlet parsed = {};\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  throw new Error(\"Frontend output is not valid JSON\");\n}\nreturn [{ json: parsed }];"
+        },
+        "id": "7175a1c9-ac5a-44b9-9ef9-590603cef5d5",
+        "name": "Clean Frontend Output",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          464,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "functionCode": "let raw = $json.text || $json.output || \"\";\nraw = raw.replace(/^```(json|python)?\\s*|\\s*```$/g, \"\").trim();\nif (!raw) throw new Error(\"Backend code is empty\");\nreturn [{ json: { files: { \"app.py\": raw } } }];\n"
+        },
+        "id": "85238dd5-3dc7-4cc0-a7f1-bc0d4a514fe4",
+        "name": "Clean Backend Output1",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          880,
+          512
+        ]
+      },
+      {
+        "parameters": {
+          "functionCode": "let raw = $json.output || $json.text || \"\";\nif (!raw.trim()) throw new Error(\"Chatbot output is empty\");\n\nraw = raw.replace(/^```(json|python)?\\s*|\\s*```$/g, \"\").trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  throw new Error(\"Invalid JSON from chatbot: \" + e.message + \"\\nRaw:\\n\" + raw.slice(0, 1000));\n}\n\nif (!parsed.files || typeof parsed.files !== \"object\") {\n  throw new Error(\"Parsed chatbot output does not contain a valid 'files' object\");\n}\n\nfor (const [key, value] of Object.entries(parsed.files)) {\n  if (typeof value !== \"string\") {\n    parsed.files[key] = JSON.stringify(value, null, 2);\n  }\n}\n\nreturn [{ json: parsed }];\n"
+        },
+        "id": "b2e58b87-0341-40e9-a3ff-0baa885f8474",
+        "name": "Clean Chatbot Output2",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          688,
+          832
+        ]
+      },
+      {
+        "parameters": {
+          "functionCode": "const fileKeys = Object.keys($json.files || {});\nreturn [{ json: { receivedFiles: fileKeys } }];"
+        },
+        "id": "8f01a865-e26f-4ed5-adea-4ef026dc8af0",
+        "name": "Validate Chatbot Files",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          1008,
+          800
+        ]
+      }
+    ],
+    "pinData": {
+      "Webhook Trigger": [
+        {
+          "json": {
+            "description": "A clean and responsive website for a mental health startup with service listings, team bios, blog section, contact form, and chatbot support for users queries. develop a fully functional and responsive website with aesthetic visuals"
+          }
+        }
+      ]
+    },
+    "connections": {
+      "Webhook Trigger": {
+        "main": [
+          [
+            {
+              "node": "Frontend Builder Agent",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Backend Builder Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Frontend Builder Agent": {
+        "main": [
+          [
+            {
+              "node": "Clean Frontend Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Backend Builder Agent": {
+        "main": [
+          [
+            {
+              "node": "Chatbot Integrator Agent",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Clean Backend Output1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Chatbot Integrator Agent": {
+        "main": [
+          [
+            {
+              "node": "Clean Chatbot Output2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge Agent Files": {
+        "main": [
+          [
+            {
+              "node": "Combine All Files",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Combine All Files": {
+        "main": [
+          [
+            {
+              "node": "Prepare Deployment Payload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Deployment Payload": {
+        "main": [
+          [
+            {
+              "node": "Deploy to Vercel",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deploy to Vercel": {
+        "main": [
+          [
+            {
+              "node": "Send Hosted URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Backend Builder Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model2": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Frontend Builder Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Chatbot Integrator Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Clean Frontend Output": {
+        "main": [
+          [
+            {
+              "node": "Merge Agent Files",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Clean Backend Output1": {
+        "main": [
+          [
+            {
+              "node": "Merge Agent Files",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Clean Chatbot Output2": {
+        "main": [
+          [
+            {
+              "node": "Validate Chatbot Files",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate Chatbot Files": {
+        "main": [
+          [
+            {
+              "node": "Merge Agent Files",
+              "type": "main",
+              "index": 2
+            }
+          ]
+        ]
+      }
+    },
+    "active": true,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "dd5782c7-29de-45ef-b26a-05fcf738ff74",
+    "meta": {
+      "instanceId": "e809c6745eb185fae5182d9813b06467be529b92443478fb9c1242de9059cdda"
+    },
+    "id": "bSI5K8VihYxtACMd",
+    "tags": []
+  }

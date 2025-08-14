@@ -10,21 +10,46 @@ export default function HomePage() {
   const [aiInput, setAiInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
   const handleAiSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!aiInput.trim()) return
 
     setIsSubmitting(true)
+    setError(null)
+    setGeneratedUrl(null)
+
     try {
-      // This would connect to your AI agent
-      console.log('Sending to AI agent:', aiInput)
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      alert('Input sent to AI agent successfully!')
+      const response = await fetch('/api/generate-website', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          description: aiInput
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to generate website')
+      }
+
+      const data = await response.json()
+      
+      if (data.status === 'success' && data.deployed_url) {
+        setGeneratedUrl(data.deployed_url)
+        alert('Website generated successfully! Check the URL below.')
+      } else {
+        setError('Website generation completed but no URL was returned')
+      }
+      
       setAiInput('')
     } catch (error) {
       console.error('Error sending to AI:', error)
-      alert('Error sending to AI agent')
+      setError(error instanceof Error ? error.message : 'Error sending to AI agent')
     } finally {
       setIsSubmitting(false)
     }
@@ -140,6 +165,45 @@ export default function HomePage() {
                 )}
               </button>
             </form>
+
+            {/* Display generated URL or error */}
+            {generatedUrl && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg"
+              >
+                <h3 className="text-lg font-semibold text-green-800 mb-2">
+                  🎉 Website Generated Successfully!
+                </h3>
+                <p className="text-green-700 mb-3">
+                  Your AI-generated website is now live and ready to use.
+                </p>
+                <a
+                  href={generatedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+                >
+                  🌐 View Your Website
+                </a>
+              </motion.div>
+            )}
+
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg"
+              >
+                <h3 className="text-lg font-semibold text-red-800 mb-2">
+                  ❌ Error Occurred
+                </h3>
+                <p className="text-red-700">{error}</p>
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </section>

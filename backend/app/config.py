@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
 from fastapi_mail import ConnectionConfig
+from typing import List
 
 # mail_config = ConnectionConfig(
 #     MAIL_USERNAME = "your_email@gmail.com",
@@ -28,6 +29,9 @@ class Settings(BaseSettings):
     # Environment
     environment: str = "development"
     debug: bool = True
+    # n8n integration settings
+    n8n_webhook_url: str = "https://your-n8n-instance.com/webhook/4f18b5d3-ec0b-43a2-b341-2228e90347d5"
+    n8n_timeout: int = 300  # 5 minutes timeout for website generation
     
     class Config:
         env_file = ".env"

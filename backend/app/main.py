@@ -7,6 +7,8 @@ from typing import List
 import os
 import smtplib
 from email.message import EmailMessage
+import requests
+import json
 
 from . import models, schemas, auth
 from .database import engine, get_db
@@ -127,6 +129,57 @@ def update_product(product_id: int, product_update: schemas.ProductUpdate, db: S
 @app.post("/ai/process")
 def process_ai_input(input_text: str, current_user: models.User = Depends(get_current_active_user)):
     return {"input": input_text, "response": f"AI processed: {input_text}", "user_id": current_user.id}
+
+@app.post("/ai/generate-website")
+async def generate_website(request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    description = data.get("description")
+
+    if not description:
+        raise HTTPException(status_code=400, detail="Website description is required")
+
+    try:
+        # Prepare payload for the n8n webhook based on the workflow
+        payload = {
+            "description": description
+        }
+        
+        # n8n webhook URL from your workflow
+        n8n_webhook_url = settings.n8n_webhook_url
+        
+        # Send request to n8n workflow
+        response = requests.post(n8n_webhook_url, json=payload, timeout=settings.n8n_timeout)
+        response.raise_for_status()
+        
+        # Parse the response to extract the deployed URL
+        response_data = response.json()
+        
+        # The n8n workflow should return the Vercel deployment URL
+        # You might need to adjust this based on the actual response structure
+        deployed_url = response_data.get("url") or response_data.get("deployment_url")
+        
+        if deployed_url:
+            return {
+                "message": "Website generated and deployed successfully!",
+                "deployed_url": deployed_url,
+                "description": description,
+                "status": "success"
+            }
+        else:
+            return {
+                "message": "Website generation completed but deployment URL not found",
+                "response": response_data,
+                "status": "completed_no_url"
+            }
+            
+    except requests.exceptions.Timeout:
+        raise HTTPException(status_code=408, detail="Website generation timed out. Please try again.")
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending request to n8n: {e}")
+        raise HTTPException(status_code=503, detail=f"Failed to connect to n8n service: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
 
 @app.post("/forgot-password")
 async def forgot_password(request: Request, db: Session = Depends(get_db)):

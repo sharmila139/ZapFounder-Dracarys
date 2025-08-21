@@ -1,0 +1,133 @@
+{
+    "nodes": [
+      {
+        "parameters": {
+          "path": "generate-site",
+          "responseMode": "lastNode",
+          "options": {}
+        },
+        "id": "Webhook",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [100, 300]
+      },
+      {
+        "parameters": {
+          "resource": "completion",
+          "prompt": "=Create a complete responsive HTML/CSS/JS single page website based on this description: {{$json[\"body\"][\"description\"]}}\nThe site should be functional and visually appealing.",
+          "temperature": 0.7,
+          "model": "gpt-3.5-turbo-instruct",
+          "maxTokens": 3000
+        },
+        "id": "OpenAI",
+        "name": "Generate Site Code",
+        "type": "n8n-nodes-base.openAi",
+        "typeVersion": 1,
+        "position": [300, 300],
+        "credentials": {
+          "openAiApi": {
+            "id": "your-openai-creds-id",
+            "name": "Your OpenAI Credential"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "functionCode": "const html = $json.choices[0].text;\n\nreturn [\n  {\n    json: {\n      files: {\n        \"index.html\": html\n      }\n    }\n  }\n];"
+        },
+        "id": "Prepare Files",
+        "name": "Prepare Files",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [500, 300]
+      },
+      {
+        "parameters": {
+          "requestMethod": "POST",
+          "url": "https://api.vercel.com/v13/deployments",
+          "jsonParameters": true,
+          "options": {},
+          "headers": [],
+          "bodyParametersJson": "={\n  \"name\": \"ai-site-{{$execution.id}}\",\n  \"files\": Object.entries($json[\"files\"]).map(([name, content]) => ({ \"file\": name, \"data\": content }))\n}"
+        },
+        "id": "Deploy to Vercel",
+        "name": "Deploy to Vercel",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [700, 300],
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "your-vercel-token-id",
+            "name": "Vercel Auth Header"
+          }
+        },
+        "continueOnFail": false,
+        "httpRequestOptions": {
+          "headers": {
+            "Authorization": "Bearer YOUR_VERCEL_TOKEN"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "responseData": "={{$json.url}}"
+        },
+        "id": "Respond with Link",
+        "name": "Send Hosted URL",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [900, 300]
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Generate Site Code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Site Code": {
+        "main": [
+          [
+            {
+              "node": "Prepare Files",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Files": {
+        "main": [
+          [
+            {
+              "node": "Deploy to Vercel",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deploy to Vercel": {
+        "main": [
+          [
+            {
+              "node": "Send Hosted URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false,
+    "settings": {},
+    "name": "AI Website Generator"
+  }
+  

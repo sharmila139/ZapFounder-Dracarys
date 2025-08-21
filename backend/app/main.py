@@ -7,13 +7,16 @@ from typing import List
 import os
 import smtplib
 from email.message import EmailMessage
+import requests
+from fastapi import Body
+# from app.routers import ai
 
 from . import models, schemas, auth
 from .database import engine, get_db
 from .config import settings
 from .dependencies import get_current_active_user, get_super_user
 
-models.Base.metadata.create_all(bind=engine)
+# models.Base.metadata.create_all(bind=engine)
 
 # Send email using Gmail SMTP with App Password
 def send_email(to: str, subject: str, body: str):
@@ -145,6 +148,23 @@ async def forgot_password(request: Request, db: Session = Depends(get_db)):
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "message": "Dracarys API is running"}
+
+N8N_WEBHOOK_URL = "http://localhost:5678/webhook/generate-ai-site"
+
+@app.post("/ai/generate-site")
+def generate_site(description: str = Body(..., embed=True)):
+    try:
+        # Send request to n8n webhook
+        response = requests.post(
+            N8N_WEBHOOK_URL,
+            json={"description": description},
+            timeout=120
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Workflow error: {e}")
 
 if __name__ == "__main__":
     import uvicorn

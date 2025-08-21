@@ -1,0 +1,386 @@
+{
+    "name": "testing merge code",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "generate-ai-site",
+          "responseMode": "lastNode",
+          "options": {}
+        },
+        "id": "7f478f9b-5a7d-4e19-8958-3d64d68ef7e9",
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "position": [
+          -992,
+          336
+        ],
+        "typeVersion": 2,
+        "webhookId": "4f18b5d3-ec0b-43a2-b341-2228e90347d5"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.description }}",
+          "options": {
+            "systemMessage": "You are an expert frontend engineer. Generate a clean responsive HTML/CSS/JS project with index.html. Return only in this JSON: {\"files\":{\"index.html\":\"<...>\", \"style.css\":\"<...>\", \"script.js\":\"<...>\"}}"
+          }
+        },
+        "id": "e16512ec-d8bb-4fd8-9af1-d5680fd90d86",
+        "name": "Frontend Builder Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "position": [
+          -368,
+          -64
+        ],
+        "typeVersion": 2.1
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json }}",
+          "options": {
+            "systemMessage": "You are a backend engineer. Build a backend (e.g., Flask or Express) to serve the given frontend project. Return only the full backend source code (e.g. app.py) as a string."
+          }
+        },
+        "id": "1c76865f-8619-4c2d-9747-3e4b5665c96e",
+        "name": "Backend Builder Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "position": [
+          -768,
+          496
+        ],
+        "typeVersion": 2.1
+      },
+      {
+        "parameters": {
+          "functionCode": "const backendCode = $json.text || $json.output || '';\nif (!backendCode.trim()) throw new Error('Backend code is empty or missing');\nreturn [{ json: { files: { \"app.py\": backendCode } } }];"
+        },
+        "id": "3631d828-d691-4023-8498-c36c7988d565",
+        "name": "Wrap Backend in File Format",
+        "type": "n8n-nodes-base.function",
+        "position": [
+          -272,
+          336
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json }}",
+          "options": {
+            "systemMessage": "Add a chatbot API to backend and embed frontend chatbot. Return updated app.py and chat.html in: {\"files\":{...}}"
+          }
+        },
+        "id": "4d652544-a670-4aab-ae8f-0f31dc4074d3",
+        "name": "Chatbot Integrator Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "position": [
+          -368,
+          640
+        ],
+        "typeVersion": 2.1
+      },
+      {
+        "parameters": {
+          "numberInputs": 3
+        },
+        "id": "a5bc0a14-edae-4a44-bb47-112fefeb887b",
+        "name": "Merge Agent Files",
+        "type": "n8n-nodes-base.merge",
+        "position": [
+          32,
+          320
+        ],
+        "typeVersion": 3.2
+      },
+      {
+        "parameters": {
+          "functionCode": "const combined = { files: {} };\nfor (const item of items) {\n  const files = item.json?.files;\n  if (!files || typeof files !== 'object') continue;\n  for (const [name, content] of Object.entries(files)) {\n    combined.files[name] = content;\n  }\n}\nreturn [{ json: combined }];"
+        },
+        "id": "a093dc07-f898-4db0-839b-74a7a726926a",
+        "name": "Combine All Files",
+        "type": "n8n-nodes-base.function",
+        "position": [
+          256,
+          336
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "functionCode": "const files = $json.files;\nreturn [{\n  json: {\n    name: \"ai_fullstack_project\",\n    files: Object.entries(files).map(([file, data]) => ({ file, data })),\n    projectSettings: { framework: null }\n  }\n}];"
+        },
+        "id": "41ef5efc-1799-47f5-b8ed-b0c49479d5d9",
+        "name": "Prepare Deployment Payload",
+        "type": "n8n-nodes-base.function",
+        "position": [
+          480,
+          336
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.vercel.com/v12/deployments",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer aZAgB1xo8sICgf5j7jdlPgnP"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json }}",
+          "options": {}
+        },
+        "id": "67823fdc-4965-4cf9-bb14-a0e6c16bd43c",
+        "name": "Deploy to Vercel",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          704,
+          336
+        ],
+        "typeVersion": 4.2
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "dfb726db-88df-4dcd-b93a-89a9985e4a01",
+        "name": "Send Hosted URL",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "position": [
+          928,
+          336
+        ],
+        "typeVersion": 1.4
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -768,
+          704
+        ],
+        "id": "dbaffd04-a8f4-4abc-aaa1-49c3bcf50694",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "odcPPcHmCHbnELtz",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -368,
+          144
+        ],
+        "id": "b8c1c3bb-749f-4c76-a646-a66bdfae643e",
+        "name": "Google Gemini Chat Model2",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "odcPPcHmCHbnELtz",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -512,
+          848
+        ],
+        "id": "2df06da6-ebe5-42ce-a2bc-c8040ef7ee61",
+        "name": "Google Gemini Chat Model1",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "odcPPcHmCHbnELtz",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      }
+    ],
+    "pinData": {
+      "Webhook Trigger": [
+        {
+          "json": {
+            "description": "A modern portfolio website for a freelance web developer with a contact form."
+          }
+        }
+      ]
+    },
+    "connections": {
+      "Webhook Trigger": {
+        "main": [
+          [
+            {
+              "node": "Frontend Builder Agent",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Backend Builder Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Frontend Builder Agent": {
+        "main": [
+          [
+            {
+              "node": "Merge Agent Files",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Backend Builder Agent": {
+        "main": [
+          [
+            {
+              "node": "Wrap Backend in File Format",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Chatbot Integrator Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wrap Backend in File Format": {
+        "main": [
+          [
+            {
+              "node": "Merge Agent Files",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Chatbot Integrator Agent": {
+        "main": [
+          [
+            {
+              "node": "Merge Agent Files",
+              "type": "main",
+              "index": 2
+            }
+          ]
+        ]
+      },
+      "Merge Agent Files": {
+        "main": [
+          [
+            {
+              "node": "Combine All Files",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Combine All Files": {
+        "main": [
+          [
+            {
+              "node": "Prepare Deployment Payload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Deployment Payload": {
+        "main": [
+          [
+            {
+              "node": "Deploy to Vercel",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deploy to Vercel": {
+        "main": [
+          [
+            {
+              "node": "Send Hosted URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Backend Builder Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model2": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Frontend Builder Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Chatbot Integrator Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": true,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "4b419ae7-01a9-4de2-8b0e-f9a0db11e20e",
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "e809c6745eb185fae5182d9813b06467be529b92443478fb9c1242de9059cdda"
+    },
+    "id": "ibKHlButnogrmIqY",
+    "tags": []
+  }

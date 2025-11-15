@@ -74,12 +74,12 @@ export default function RegisterPage() {
           <div className="text-center">
             <div className="flex justify-center mb-6">
               <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-2xl flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">D</span>
+                <span className="text-white font-bold text-2xl">Z</span>
               </div>
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
             <p className="text-gray-600">
-              Join Dracarys and start your journey with AI
+              Join Zap Founder and start your startup in 60 sec
             </p>
           </div>
 

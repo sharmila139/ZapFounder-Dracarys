@@ -48,10 +48,10 @@ export default function AboutPage() {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            <h1 className="text-5xl font-bold mb-6">About Dracarys</h1>
+            <h1 className="text-5xl font-bold mb-6">About Zap Founder</h1>
             <p className="text-xl max-w-3xl mx-auto">
-              We're on a mission to revolutionize the way people interact with AI technology, 
-              making it accessible, powerful, and user-friendly for everyone.
+              We're on a mission to help entrepreneurs start their startup in 60 seconds with AI-powered tools, 
+              making entrepreneurship accessible, fast, and successful for everyone.
             </p>
           </motion.div>
         </div>
@@ -68,9 +68,9 @@ export default function AboutPage() {
             >
               <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Mission</h2>
               <p className="text-lg text-gray-600 mb-6">
-                At Dracarys, we believe that artificial intelligence should be accessible to everyone. 
+                At Zap Founder, we believe that starting a startup should be fast and accessible to everyone. 
                 Our platform combines cutting-edge AI technology with intuitive design to create 
-                powerful tools that enhance productivity and creativity.
+                powerful tools that help entrepreneurs launch their ideas in just 60 seconds.
               </p>
               <p className="text-lg text-gray-600">
                 We're committed to building a future where AI works seamlessly with human intelligence, 
@@ -153,7 +153,7 @@ export default function AboutPage() {
           >
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Meet Our Team</h2>
             <p className="text-xl text-gray-600">
-              The passionate individuals behind Dracarys
+              The passionate individuals behind Zap Founder
             </p>
           </motion.div>
 

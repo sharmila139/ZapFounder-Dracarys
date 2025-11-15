@@ -1,7 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
-from fastapi_mail import ConnectionConfig
-from typing import List
+from typing import Optional, List
 
 # mail_config = ConnectionConfig(
 #     MAIL_USERNAME = "your_email@gmail.com",
@@ -16,7 +14,7 @@ from typing import List
 
 class Settings(BaseSettings):
     # Database
-    database_url: str = "postgresql://dracarys_user:dracarys_password@localhost:5432/dracarys_db"
+    database_url: str = "postgresql+psycopg://dracarys_user:dracarys_password@localhost:5432/dracarys_db"
     
     # JWT
     secret_key: str = "your-secret-key-change-this-in-production"

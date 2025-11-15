@@ -8,10 +8,10 @@ import { AuthProvider } from '@/lib/auth'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Dracarys - AI-Powered Platform',
-  description: 'A complete website with AI integration, customizable content, and modern design.',
-  keywords: ['AI', 'Next.js', 'FastAPI', 'PostgreSQL', 'Web Development'],
-  authors: [{ name: 'Dracarys Team' }],
+  title: 'Zap Founder - Start your startup in 60 sec',
+  description: 'AI-powered platform to start your startup in 60 seconds with cutting-edge technology.',
+  keywords: ['AI', 'Startup', 'Next.js', 'FastAPI', 'PostgreSQL', 'Web Development'],
+  authors: [{ name: 'Zap Founder Team' }],
   viewport: 'width=device-width, initial-scale=1',
 }
 

@@ -24,7 +24,7 @@ export default function Footer() {
     { icon: <Github className="w-5 h-5" />, href: '#', label: 'GitHub' },
     { icon: <Twitter className="w-5 h-5" />, href: '#', label: 'Twitter' },
     { icon: <Linkedin className="w-5 h-5" />, href: '#', label: 'LinkedIn' },
-    { icon: <Mail className="w-5 h-5" />, href: 'mailto:contact@dracarys.com', label: 'Email' },
+    { icon: <Mail className="w-5 h-5" />, href: 'mailto:contact@zapfounder.com', label: 'Email' },
   ]
 
   return (
@@ -35,12 +35,12 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">D</span>
+                <span className="text-white font-bold text-lg">Z</span>
               </div>
-              <span className="text-xl font-bold">Dracarys</span>
+              <span className="text-xl font-bold">Zap Founder</span>
             </div>
             <p className="text-gray-400 mb-4 max-w-md">
-              Experience the future of AI-powered web applications with our cutting-edge platform.
+              Start your startup in 60 sec with our AI-powered platform.
             </p>
             <div className="flex space-x-4">
               {socialLinks.map((social) => (
@@ -94,7 +94,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">
-            © {currentYear} Dracarys. All rights reserved.
+            © {currentYear} Zap Founder. All rights reserved.
           </p>
           <p className="text-gray-400 text-sm mt-2 md:mt-0">
             Built with Next.js, FastAPI, and PostgreSQL

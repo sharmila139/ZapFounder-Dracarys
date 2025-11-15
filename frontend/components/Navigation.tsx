@@ -25,9 +25,9 @@ export default function Navigation() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">D</span>
+                <span className="text-white font-bold text-lg">Z</span>
               </div>
-              <span className="text-xl font-bold text-gradient">Dracarys</span>
+              <span className="text-xl font-bold text-gradient">Zap Founder</span>
             </Link>
           </div>
 

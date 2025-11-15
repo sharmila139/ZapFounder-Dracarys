@@ -54,7 +54,7 @@ export default function LoginPage() {
           <div className="text-center">
             <div className="flex justify-center mb-6">
               <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-2xl flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">D</span>
+                <span className="text-white font-bold text-2xl">Z</span>
               </div>
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>

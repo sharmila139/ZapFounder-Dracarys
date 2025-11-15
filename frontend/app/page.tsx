@@ -22,7 +22,7 @@ export default function HomePage() {
     setGeneratedUrl(null)
 
     try {
-      const response = await fetch('/api/generate-website', {
+      const response = await fetch('/api/generate-ai-site', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,10 +94,10 @@ export default function HomePage() {
           >
             <h1 className="text-5xl md:text-7xl font-bold mb-6">
               Welcome to{' '}
-              <span className="text-yellow-300">Dracarys</span>
+              <span className="text-yellow-300">Zap Founder</span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-              Experience the future of AI-powered web applications with our cutting-edge platform.
+              Start your startup in 60 sec with our AI-powered platform.
             </p>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -218,7 +218,7 @@ export default function HomePage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Why Choose Dracarys?
+              Why Choose Zap Founder?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Our platform combines cutting-edge technology with user-friendly design to deliver exceptional experiences.

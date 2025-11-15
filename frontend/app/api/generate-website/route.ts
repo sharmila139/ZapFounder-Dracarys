@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     
     // Forward the request to the backend
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000'
-    const response = await fetch(`${backendUrl}/ai/generate-website`, {
+    const response = await fetch(`${backendUrl}/generate-ai-site`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -8,14 +8,15 @@ import os
 import smtplib
 from email.message import EmailMessage
 import requests
-import json
+from fastapi import Body
+# from app.routers import ai
 
-from . import models, schemas, auth
-from .database import engine, get_db
-from .config import settings
-from .dependencies import get_current_active_user, get_super_user
+from app import models, schemas, auth
+from app.database import engine, get_db
+from app.config import settings
+from app.dependencies import get_current_active_user, get_super_user
 
-models.Base.metadata.create_all(bind=engine)
+# models.Base.metadata.create_all(bind=engine)
 
 # Send email using Gmail SMTP with App Password
 def send_email(to: str, subject: str, body: str):
@@ -34,8 +35,8 @@ def send_email(to: str, subject: str, body: str):
         raise
 
 app = FastAPI(
-    title="Dracarys API",
-    description="AI-powered website backend API",
+    title="Zap Founder API",
+    description="AI-powered startup platform - start your startup in 60 sec",
     version="1.0.0"
 )
 
@@ -50,16 +51,37 @@ app.add_middleware(
 
 # Authentication routes
 @app.post("/auth/register", response_model=schemas.Token)
-def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = auth.get_user(db, email=user.email)
+async def register(request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    user_data = schemas.UserCreate(**data)
+    
+    # Ensure password is string and handle encoding
+    if isinstance(user_data.password, bytes):
+        user_data.password = user_data.password.decode('utf-8')
+    user_data.password = str(user_data.password)
+    if len(user_data.password) > 72:
+        user_data.password = user_data.password[:72]
+    
+    db_user = auth.get_user(db, email=user_data.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    user = auth.create_user(db, user)
+    user = auth.create_user(db, user_data)
     access_token = auth.create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer", "user": user}
 
 @app.post("/auth/login", response_model=schemas.Token)
-def login(email: str, password: str, db: Session = Depends(get_db)):
+async def login(request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    email = data.get("email")
+    password = data.get("password")
+    
+    # Ensure password is string and handle encoding
+    if isinstance(password, bytes):
+        password = password.decode('utf-8')
+    password = str(password)
+    if len(password) > 72:
+        password = password[:72]
+    
     user = auth.authenticate_user(db, email, password)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
@@ -130,57 +152,6 @@ def update_product(product_id: int, product_update: schemas.ProductUpdate, db: S
 def process_ai_input(input_text: str, current_user: models.User = Depends(get_current_active_user)):
     return {"input": input_text, "response": f"AI processed: {input_text}", "user_id": current_user.id}
 
-@app.post("/ai/generate-website")
-async def generate_website(request: Request, db: Session = Depends(get_db)):
-    data = await request.json()
-    description = data.get("description")
-
-    if not description:
-        raise HTTPException(status_code=400, detail="Website description is required")
-
-    try:
-        # Prepare payload for the n8n webhook based on the workflow
-        payload = {
-            "description": description
-        }
-        
-        # n8n webhook URL from your workflow
-        n8n_webhook_url = settings.n8n_webhook_url
-        
-        # Send request to n8n workflow
-        response = requests.post(n8n_webhook_url, json=payload, timeout=settings.n8n_timeout)
-        response.raise_for_status()
-        
-        # Parse the response to extract the deployed URL
-        response_data = response.json()
-        
-        # The n8n workflow should return the Vercel deployment URL
-        # You might need to adjust this based on the actual response structure
-        deployed_url = response_data.get("url") or response_data.get("deployment_url")
-        
-        if deployed_url:
-            return {
-                "message": "Website generated and deployed successfully!",
-                "deployed_url": deployed_url,
-                "description": description,
-                "status": "success"
-            }
-        else:
-            return {
-                "message": "Website generation completed but deployment URL not found",
-                "response": response_data,
-                "status": "completed_no_url"
-            }
-            
-    except requests.exceptions.Timeout:
-        raise HTTPException(status_code=408, detail="Website generation timed out. Please try again.")
-    except requests.exceptions.RequestException as e:
-        print(f"Error sending request to n8n: {e}")
-        raise HTTPException(status_code=503, detail=f"Failed to connect to n8n service: {e}")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
-
 @app.post("/forgot-password")
 async def forgot_password(request: Request, db: Session = Depends(get_db)):
     data = await request.json()
@@ -197,7 +168,24 @@ async def forgot_password(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "message": "Dracarys API is running"}
+    return {"status": "healthy", "message": "Zap Founder API is running"}
+
+N8N_WEBHOOK_URL = "http://localhost:5678/webhook-test/generate-ai-site"
+
+@app.post("/generate-ai-site")
+def generate_site(description: str = Body(..., embed=True)):
+    try:
+        # Send request to n8n webhook
+        response = requests.post(
+            N8N_WEBHOOK_URL,
+            json={"description": description},
+            timeout=120
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Workflow error: {e}")
 
 if __name__ == "__main__":
     import uvicorn

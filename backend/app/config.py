@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     # n8n integration settings
     n8n_webhook_url: str = "https://your-n8n-instance.com/webhook/4f18b5d3-ec0b-43a2-b341-2228e90347d5"
     n8n_timeout: int = 300  # 5 minutes timeout for website generation
+
+    # SMTP settings
+    smtp_server: Optional[str] = None
+    smtp_port: Optional[int] = None
+    smtp_username: Optional[str] = None
+    smtp_password: Optional[str] = None
     
     class Config:
         env_file = ".env"

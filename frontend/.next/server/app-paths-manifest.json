@@ -1,4 +1,4 @@
 {
-  "/api/generate-ai-site/route": "app/api/generate-ai-site/route.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/register/page": "app/register/page.js"
 }
